@@ -1,0 +1,8 @@
+streamlit
+librosa
+numpy
+opencv-python-headless
+openai-whisper
+moviepy
+soundfile
+audioread

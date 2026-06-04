@@ -1,0 +1,9 @@
+output/
+test_videos/
+venv/
+__pycache__/
+*.pyc
+*.mp4
+*.webm
+*.wav
+*.DS_Store
