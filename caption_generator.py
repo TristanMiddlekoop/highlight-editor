@@ -55,15 +55,21 @@ def parse_captions(caption_text):
 
     for line in lines:
         line = line.strip()
-        if line.startswith('CLIP '):
-            current_clip = int(line.replace('CLIP ', '').replace(':', ''))
-            clips[current_clip] = {}
-        elif line.startswith('INSTAGRAM:') and current_clip:
-            clips[current_clip]['instagram'] = line.replace('INSTAGRAM:', '').strip()
-        elif line.startswith('TWITTER:') and current_clip:
-            clips[current_clip]['twitter'] = line.replace('TWITTER:', '').strip()
-        elif line.startswith('HASHTAGS:') and current_clip:
-            clips[current_clip]['hashtags'] = line.replace('HASHTAGS:', '').strip()
+        if not line:
+            continue
+        if 'CLIP' in line.upper() and ':' in line and 'INSTAGRAM' not in line.upper() and 'TWITTER' not in line.upper() and 'HASHTAGS' not in line.upper():
+            try:
+                num = int(line.upper().replace('CLIP', '').replace(':', '').strip())
+                current_clip = num
+                clips[current_clip] = {}
+            except:
+                pass
+        elif line.upper().startswith('INSTAGRAM:') and current_clip:
+            clips[current_clip]['instagram'] = line[10:].strip().strip('"').strip("'")
+        elif line.upper().startswith('TWITTER:') and current_clip:
+            clips[current_clip]['twitter'] = line[8:].strip().strip('"').strip("'")
+        elif line.upper().startswith('HASHTAGS:') and current_clip:
+            clips[current_clip]['hashtags'] = line[9:].strip().strip('"').strip("'")
 
     return clips
 

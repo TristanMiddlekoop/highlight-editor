@@ -1,3 +1,4 @@
+import anthropic
 import streamlit as st
 import os
 import sys
@@ -6,14 +7,15 @@ import shutil
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault('ANTHROPIC_API_KEY', os.environ.get('ANTHROPIC_API_KEY', ''))
 
 from detector import find_highlights, SPORT_PRESETS
 from cutter import cut_highlights
 from exporter import stitch_highlights
 from captions import caption_all_clips
-from caption_generator import generate_and_save_captions
+from caption_generator import generate_and_save_captions, generate_captions, parse_captions
 
-st.set_page_config(page_title="AI Highlight Editor", page_icon="🎬", layout="centered")
+st.set_page_config(page_title="AI Highlight Editor", page_icon="🎬", layout="wide")
 
 st.title("🎬 AI Sports Highlight Editor")
 st.markdown("Upload a sports video and get highlight clips automatically.")
@@ -31,13 +33,13 @@ with st.sidebar:
         font_size = 1.3
         position = 0.88
     use_ai_captions = st.toggle("AI Caption Generator", value=True)
+    use_preview = st.toggle("Preview Before Download", value=True)
 
 st.divider()
 
 uploaded_file = st.file_uploader("Upload your video", type=["mp4", "mov", "webm", "avi", "mkv"])
 
 if uploaded_file:
-    st.video(uploaded_file)
 
     if st.button("🚀 Process Highlights", type="primary"):
         tmp_dir = tempfile.mkdtemp()
@@ -76,37 +78,96 @@ if uploaded_file:
                 cut_highlights(video_path, timestamps, clip_duration=SPORT_PRESETS[sport]['clip_duration'], format='horizontal', output_dir=output_dir)
                 stitch_highlights(output_dir, final_output_name='highlight_reel_horizontal.mp4')
 
+            ai_captions = {}
             if use_ai_captions:
                 st.write("🤖 Generating AI captions and hashtags...")
-                generate_and_save_captions(sport, highlights, clip_duration=SPORT_PRESETS[sport]['clip_duration'], output_dir=output_dir)
+                caption_text = generate_captions(sport, timestamps, [h['score'] for h in highlights], SPORT_PRESETS[sport]['clip_duration'])
+                ai_captions = parse_captions(caption_text)
 
             status.update(label="✅ Done!", state="complete")
 
+        st.session_state['output_dir'] = output_dir
+        st.session_state['highlights'] = highlights
+        st.session_state['ai_captions'] = ai_captions
+        st.session_state['processed'] = True
+
+    if st.session_state.get('processed'):
+        output_dir = st.session_state['output_dir']
+        highlights = st.session_state['highlights']
+        ai_captions = st.session_state['ai_captions']
+
         st.divider()
-        st.subheader("📥 Download Your Clips")
 
-        all_clips = glob.glob(os.path.join(output_dir, "*.mp4"))
-        for clip in sorted(all_clips):
-            clip_name = os.path.basename(clip)
-            with open(clip, "rb") as f:
-                st.download_button(
-                    label="⬇️ " + clip_name,
-                    data=f,
-                    file_name=clip_name,
-                    mime="video/mp4"
-                )
+        if use_preview:
+            st.subheader("👀 Preview + Approve Clips")
+            st.markdown("Review each clip before downloading. Edit captions if needed.")
 
-        captions_file = os.path.join(output_dir, "captions.txt")
-        if os.path.exists(captions_file):
-            with open(captions_file, "r") as f:
-                st.divider()
-                st.subheader("📝 AI Generated Captions")
-                st.text(f.read())
-                st.download_button(
-                    label="⬇️ Download captions.txt",
-                    data=open(captions_file).read(),
-                    file_name="captions.txt",
-                    mime="text/plain"
-                )
+            approved_clips = []
+            all_vertical = sorted(glob.glob(os.path.join(output_dir, "highlight_*_vertical.mp4")))
 
-        shutil.rmtree(tmp_dir)
+            for i, clip_path in enumerate(all_vertical):
+                clip_name = os.path.basename(clip_path)
+                clip_num = i + 1
+
+                with st.expander("Clip " + str(clip_num) + " — " + clip_name, expanded=True):
+                    col1, col2 = st.columns([1, 1])
+
+                    with col1:
+                        st.video(clip_path)
+                        minutes = int(highlights[i]['timestamp'] // 60) if i < len(highlights) else 0
+                        seconds = int(highlights[i]['timestamp'] % 60) if i < len(highlights) else 0
+                        score = highlights[i]['score'] if i < len(highlights) else 0
+                        flame = "🔥" if score >= 70 else ""
+                        st.caption("Timestamp: " + str(minutes) + ":" + str(seconds).zfill(2) + " | Score: " + str(score) + " " + flame)
+
+                    with col2:
+                        if ai_captions and clip_num in ai_captions:
+                            instagram = st.text_area("Instagram Caption", value=ai_captions[clip_num].get('instagram', ''), key="ig_" + str(clip_num))
+                            twitter = st.text_area("Twitter/X Caption", value=ai_captions[clip_num].get('twitter', ''), key="tw_" + str(clip_num))
+                            hashtags = st.text_area("Hashtags", value=ai_captions[clip_num].get('hashtags', ''), key="ht_" + str(clip_num))
+                        else:
+                            st.info("Enable AI Caption Generator for captions")
+
+                    approve = st.checkbox("✅ Approve this clip", value=True, key="approve_" + str(clip_num))
+                    if approve:
+                        approved_clips.append(clip_path)
+
+            st.divider()
+            st.write("**" + str(len(approved_clips)) + " of " + str(len(all_vertical)) + " clips approved**")
+
+            if st.button("⬇️ Download Approved Clips", type="primary"):
+                for clip_path in approved_clips:
+                    clip_name = os.path.basename(clip_path)
+                    with open(clip_path, "rb") as f:
+                        st.download_button(
+                            label="⬇️ " + clip_name,
+                            data=f,
+                            file_name=clip_name,
+                            mime="video/mp4",
+                            key="dl_" + clip_name
+                        )
+
+                reel = os.path.join(output_dir, "highlight_reel_horizontal.mp4")
+                if os.path.exists(reel):
+                    with open(reel, "rb") as f:
+                        st.download_button(
+                            label="⬇️ highlight_reel_horizontal.mp4",
+                            data=f,
+                            file_name="highlight_reel_horizontal.mp4",
+                            mime="video/mp4",
+                            key="dl_reel"
+                        )
+
+        else:
+            st.subheader("📥 Download Your Clips")
+            all_clips = glob.glob(os.path.join(output_dir, "*.mp4"))
+            for clip in sorted(all_clips):
+                clip_name = os.path.basename(clip)
+                with open(clip, "rb") as f:
+                    st.download_button(
+                        label="⬇️ " + clip_name,
+                        data=f,
+                        file_name=clip_name,
+                        mime="video/mp4",
+                        key="dl_" + clip_name
+                    )
