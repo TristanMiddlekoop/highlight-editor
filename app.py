@@ -79,10 +79,13 @@ if uploaded_file:
                 stitch_highlights(output_dir, final_output_name='highlight_reel_horizontal.mp4')
 
             ai_captions = {}
-            if use_ai_captions:
-                st.write("🤖 Generating AI captions and hashtags...")
+            st.write("🤖 Generating AI captions and hashtags...")
+            try:
                 caption_text = generate_captions(sport, timestamps, [h['score'] for h in highlights], SPORT_PRESETS[sport]['clip_duration'])
                 ai_captions = parse_captions(caption_text)
+                st.write("✅ Generated captions for " + str(len(ai_captions)) + " clips")
+            except Exception as e:
+                st.write("⚠️ Caption generation failed: " + str(e))
 
             status.update(label="✅ Done!", state="complete")
 
@@ -95,6 +98,7 @@ if uploaded_file:
         output_dir = st.session_state['output_dir']
         highlights = st.session_state['highlights']
         ai_captions = st.session_state['ai_captions']
+        st.write("DEBUG: " + str(len(ai_captions)) + " caption sets stored")
 
         st.divider()
 
