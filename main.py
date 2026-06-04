@@ -4,6 +4,7 @@ from detector import find_highlights, SPORT_PRESETS
 from cutter import cut_highlights
 from exporter import stitch_highlights
 from captions import caption_all_clips
+from caption_generator import generate_and_save_captions
 
 def run(video_path, mode='both', sport='general', top_n=None, captions=False, font_size=1.0, position=0.82):
     video_path = os.path.expanduser(video_path)
@@ -31,13 +32,11 @@ def run(video_path, mode='both', sport='general', top_n=None, captions=False, fo
 
     highlights = find_highlights(video_path, sensitivity=sensitivity, min_gap=min_gap)
 
-    # Sort by hype score, take top N
     highlights = sorted(highlights, key=lambda x: x['score'], reverse=True)
     if top_n and len(highlights) > top_n:
         highlights = highlights[:top_n]
         print('Trimmed to top ' + str(top_n) + ' highlights by hype score')
 
-    # Sort back into chronological order for cutting
     highlights = sorted(highlights, key=lambda x: x['timestamp'])
 
     print('Found ' + str(len(highlights)) + ' highlights:')
@@ -69,11 +68,16 @@ def run(video_path, mode='both', sport='general', top_n=None, captions=False, fo
         stitch_highlights('~/highlight-editor/output', final_output_name='highlight_reel_horizontal.mp4')
         print('')
 
+    print('--- AI CAPTIONS + HASHTAGS ---')
+    generate_and_save_captions(sport, highlights, clip_duration=clip_duration)
+    print('')
+
     print('DONE. Check ~/highlight-editor/output/')
     print('  Short form: individual _vertical.mp4 clips')
     if captions:
         print('  Captioned:  individual _vertical_captioned.mp4 clips')
     print('  Long form:  highlight_reel_horizontal.mp4')
+    print('  Captions:   output/captions.txt')
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
