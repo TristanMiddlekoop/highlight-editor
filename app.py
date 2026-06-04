@@ -11,6 +11,7 @@ from detector import find_highlights, SPORT_PRESETS
 from cutter import cut_highlights
 from exporter import stitch_highlights
 from captions import caption_all_clips
+from caption_generator import generate_and_save_captions
 
 st.set_page_config(page_title="AI Highlight Editor", page_icon="🎬", layout="centered")
 
@@ -29,6 +30,7 @@ with st.sidebar:
     else:
         font_size = 1.3
         position = 0.88
+    use_ai_captions = st.toggle("AI Caption Generator", value=True)
 
 st.divider()
 
@@ -74,6 +76,10 @@ if uploaded_file:
                 cut_highlights(video_path, timestamps, clip_duration=SPORT_PRESETS[sport]['clip_duration'], format='horizontal', output_dir=output_dir)
                 stitch_highlights(output_dir, final_output_name='highlight_reel_horizontal.mp4')
 
+            if use_ai_captions:
+                st.write("🤖 Generating AI captions and hashtags...")
+                generate_and_save_captions(sport, highlights, clip_duration=SPORT_PRESETS[sport]['clip_duration'], output_dir=output_dir)
+
             status.update(label="✅ Done!", state="complete")
 
         st.divider()
@@ -88,6 +94,19 @@ if uploaded_file:
                     data=f,
                     file_name=clip_name,
                     mime="video/mp4"
+                )
+
+        captions_file = os.path.join(output_dir, "captions.txt")
+        if os.path.exists(captions_file):
+            with open(captions_file, "r") as f:
+                st.divider()
+                st.subheader("📝 AI Generated Captions")
+                st.text(f.read())
+                st.download_button(
+                    label="⬇️ Download captions.txt",
+                    data=open(captions_file).read(),
+                    file_name="captions.txt",
+                    mime="text/plain"
                 )
 
         shutil.rmtree(tmp_dir)
