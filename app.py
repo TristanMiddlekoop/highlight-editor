@@ -13,6 +13,7 @@ from cutter import cut_highlights
 from exporter import stitch_highlights
 from captions import caption_all_clips
 from caption_generator import generate_captions, parse_captions
+from scheduler import add_to_queue, view_queue, set_posting_times, load_schedule
 
 st.set_page_config(page_title="AI Highlight Editor", page_icon="🎬", layout="wide")
 
@@ -170,16 +171,54 @@ if st.session_state.processed:
         st.divider()
         st.write("**" + str(len(approved_clips)) + " of " + str(len(all_vertical)) + " clips approved**")
 
-        if st.button("⬇️ Download Approved Clips", type="primary"):
-            for clip_path in approved_clips:
-                clip_name = os.path.basename(clip_path)
-                with open(clip_path, "rb") as f:
-                    st.download_button(label="⬇️ " + clip_name, data=f, file_name=clip_name, mime="video/mp4", key="dl_" + clip_name)
+        col_dl, col_sched = st.columns([1, 1])
 
-            reel = os.path.join(output_dir, "highlight_reel_horizontal.mp4")
-            if os.path.exists(reel):
-                with open(reel, "rb") as f:
-                    st.download_button(label="⬇️ highlight_reel_horizontal.mp4", data=f, file_name="highlight_reel_horizontal.mp4", mime="video/mp4", key="dl_reel")
+        with col_dl:
+            if st.button("⬇️ Download Approved Clips", type="primary"):
+                for clip_path in approved_clips:
+                    clip_name = os.path.basename(clip_path)
+                    with open(clip_path, "rb") as f:
+                        st.download_button(label="⬇️ " + clip_name, data=f, file_name=clip_name, mime="video/mp4", key="dl_" + clip_name)
+                reel = os.path.join(output_dir, "highlight_reel_horizontal.mp4")
+                if os.path.exists(reel):
+                    with open(reel, "rb") as f:
+                        st.download_button(label="⬇️ highlight_reel_horizontal.mp4", data=f, file_name="highlight_reel_horizontal.mp4", mime="video/mp4", key="dl_reel")
+
+        with col_sched:
+            st.subheader("📅 Schedule Posts")
+            platforms = st.multiselect("Platforms", ["instagram", "tiktok", "twitter", "youtube"], default=["instagram"])
+            if st.button("📅 Add Approved to Schedule", type="secondary"):
+                schedule = load_schedule()
+                if not schedule.get('posting_times'):
+                    set_posting_times(['09:00', '12:00', '18:00'])
+                added = 0
+                for i, clip_path in enumerate(approved_clips):
+                    clip_num = i + 1
+                    caption = ai_captions.get(clip_num, {}).get('instagram', '')
+                    hashtags = ai_captions.get(clip_num, {}).get('hashtags', '')
+                    for platform in platforms:
+                        add_to_queue(clip_path, platform, caption, hashtags)
+                        added += 1
+                st.success("✅ Added " + str(added) + " posts to schedule!")
+                st.json(load_schedule()['queue'][-added:])
+
+
+
+                st.divider()
+            st.subheader("📋 Current Queue")
+            schedule = load_schedule()
+            queue = schedule.get('queue', [])
+            if queue:
+                for item in sorted(queue, key=lambda x: x['scheduled_time']):
+                    status_icon = "✅" if item['status'] == 'posted' else "🕐"
+                    st.write(status_icon + " **" + item['scheduled_time'] + "** | " + item['platform'].upper() + " | " + os.path.basename(item['clip_path']))
+                    st.caption(item['caption'][:80] + "...")
+            else:
+                st.info("No posts queued yet")
+
+
+
+    
 
     else:
         st.subheader("📥 Download Your Clips")
@@ -188,4 +227,3 @@ if st.session_state.processed:
             clip_name = os.path.basename(clip)
             with open(clip, "rb") as f:
                 st.download_button(label="⬇️ " + clip_name, data=f, file_name=clip_name, mime="video/mp4", key="dl_" + clip_name)
-                

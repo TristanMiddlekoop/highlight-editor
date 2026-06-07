@@ -1,0 +1,27 @@
+{
+  "posting_times": [
+    "09:00",
+    "12:00",
+    "18:00"
+  ],
+  "queue": [
+    {
+      "clip_path": "~/highlight-editor/output/highlight_1_0m0s_vertical.mp4",
+      "platform": "instagram",
+      "caption": "OH MY! This play had the crowd going crazy \ud83d\udd25",
+      "hashtags": "#basketball #hoops #highlights",
+      "scheduled_time": "2026-06-07 09:00",
+      "status": "queued",
+      "added_at": "2026-06-06T20:08:57.234276"
+    },
+    {
+      "clip_path": "~/highlight-editor/output/highlight_2_4m3s_vertical.mp4",
+      "platform": "tiktok",
+      "caption": "When the offense clicks like this \ud83d\udc4c",
+      "hashtags": "#basketball #sportsclips #viral",
+      "scheduled_time": "2026-06-07 12:00",
+      "status": "queued",
+      "added_at": "2026-06-06T20:08:57.234433"
+    }
+  ]
+}
