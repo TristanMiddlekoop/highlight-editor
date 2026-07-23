@@ -6,22 +6,31 @@
   ],
   "queue": [
     {
-      "clip_path": "~/highlight-editor/output/highlight_1_0m0s_vertical.mp4",
+      "clip_path": "/Users/tristanmiddlekoop/highlight-editor/output/highlight_1_0m0s_vertical.mp4",
       "platform": "instagram",
-      "caption": "OH MY! This play had the crowd going crazy \ud83d\udd25",
-      "hashtags": "#basketball #hoops #highlights",
-      "scheduled_time": "2026-06-07 09:00",
+      "caption": "Great basketball play here! The energy was unreal \ud83d\udd25",
+      "hashtags": "#basketball #hoops #highlights #nba #sports",
+      "scheduled_time": "2026-07-17 12:00",
       "status": "queued",
-      "added_at": "2026-06-06T20:08:57.234276"
+      "added_at": "2026-07-17T09:36:39.961953"
     },
     {
-      "clip_path": "~/highlight-editor/output/highlight_2_4m3s_vertical.mp4",
-      "platform": "tiktok",
+      "clip_path": "/Users/tristanmiddlekoop/highlight-editor/output/highlight_2_4m3s_vertical.mp4",
+      "platform": "instagram",
       "caption": "When the offense clicks like this \ud83d\udc4c",
-      "hashtags": "#basketball #sportsclips #viral",
-      "scheduled_time": "2026-06-07 12:00",
+      "hashtags": "#basketball #hoops #highlights #nba #sports",
+      "scheduled_time": "2026-07-17 18:00",
       "status": "queued",
-      "added_at": "2026-06-06T20:08:57.234433"
+      "added_at": "2026-07-17T09:36:39.962125"
+    },
+    {
+      "clip_path": "/Users/tristanmiddlekoop/highlight-editor/output/highlight_3_4m47s_vertical.mp4",
+      "platform": "instagram",
+      "caption": "OH MY! This play had the crowd going crazy \ud83c\udfc0",
+      "hashtags": "#basketball #hoops #highlights #nba #sports",
+      "scheduled_time": "2026-07-18 09:00",
+      "status": "queued",
+      "added_at": "2026-07-17T09:36:39.962341"
     }
   ]
 }
