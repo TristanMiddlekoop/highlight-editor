@@ -7,3 +7,5 @@ __pycache__/
 *.webm
 *.wav
 *.DS_Store
+youtube_credentials.json
+youtube_token.pickle
