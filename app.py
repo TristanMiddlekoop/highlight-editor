@@ -14,6 +14,7 @@ from exporter import stitch_highlights
 from captions import caption_all_clips
 from caption_generator import generate_captions, parse_captions
 from scheduler import add_to_queue, view_queue, set_posting_times, load_schedule
+from analytics import get_dashboard, load_analytics
 
 st.set_page_config(page_title="AI Highlight Editor", page_icon="🎬", layout="wide")
 
@@ -227,3 +228,42 @@ if st.session_state.processed:
             clip_name = os.path.basename(clip)
             with open(clip, "rb") as f:
                 st.download_button(label="⬇️ " + clip_name, data=f, file_name=clip_name, mime="video/mp4", key="dl_" + clip_name)
+                st.divider()
+st.subheader("📊 Analytics Dashboard")
+
+analytics = load_analytics()
+schedule = load_schedule()
+queue = schedule.get('queue', [])
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric("Videos Processed", len(analytics.get('videos_processed', [])))
+
+with col2:
+    import glob
+    output_dir = os.path.expanduser('~/highlight-editor/output')
+    clips = glob.glob(os.path.join(output_dir, '*.mp4'))
+    st.metric("Clips in Output", len(clips))
+
+with col3:
+    queued = len([p for p in queue if p['status'] == 'queued'])
+    st.metric("Posts Queued", queued)
+
+with col4:
+    published = len([p for p in queue if p['status'] == 'posted'])
+    st.metric("Posts Published", published + len(analytics.get('posts_published', [])))
+
+sport_stats = analytics.get('sport_stats', {})
+if sport_stats:
+    st.subheader("🏆 By Sport")
+    sport_cols = st.columns(len(sport_stats))
+    for idx, (sport, stats) in enumerate(sport_stats.items()):
+        with sport_cols[idx]:
+            st.metric(sport.capitalize(), str(stats['videos']) + ' videos')
+
+upcoming = [p for p in queue if p['status'] == 'queued']
+if upcoming:
+    st.subheader("🕐 Upcoming Posts")
+    for post in sorted(upcoming, key=lambda x: x['scheduled_time'])[:5]:
+        st.write("🕐 **" + post['scheduled_time'] + "** | " + post['platform'].upper() + " | " + os.path.basename(post['clip_path']))
