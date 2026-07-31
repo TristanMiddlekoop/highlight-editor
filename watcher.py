@@ -20,13 +20,16 @@ def detect_sport(filename):
     filename_lower = filename.lower()
     sport_keywords = {
         'basketball': ['basketball', 'nba', 'wnba', 'hoops', 'bball'],
-        'soccer': ['soccer', 'football', 'fifa', 'mls', 'epl', 'premier'],
+        'soccer': ['soccer', 'football', 'fifa', 'mls', 'epl'],
+        'darts': ['darts', 'pdc', 'bdo', 'oche', 'bullseye', 'checkout', 'premier_darts'],
         'mma': ['mma', 'ufc', 'fight', 'boxing', 'combat'],
         'football': ['nfl', 'american_football', 'gridiron'],
         'hockey': ['hockey', 'nhl', 'ice'],
         'cricket': ['cricket', 'ipl', 'test_match'],
-        'tennis': ['tennis', 'wimbledon', 'usopen', 'atp', 'wta']
+        'tennis': ['tennis', 'wimbledon', 'usopen', 'atp', 'wta'],
+        'darts': ['darts', 'pdc', 'bdo', 'oche', 'bullseye', 'checkout']
     }
+
     for sport, keywords in sport_keywords.items():
         for keyword in keywords:
             if keyword in filename_lower:
@@ -84,8 +87,11 @@ class VideoHandler(FileSystemEventHandler):
                 print(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
 
                 processed_path = os.path.join(PROCESSED_FOLDER, filename)
-                os.rename(filepath, processed_path)
-                print('📦 Moved to processed: ' + processed_path)
+                if os.path.exists(filepath):
+                    os.rename(filepath, processed_path)
+                    print('📦 Moved to processed: ' + processed_path)
+                else:
+                    print('📦 File already processed')
             else:
                 print('❌ Pipeline failed for: ' + filename)
                 print(result.stderr[-300:] if len(result.stderr) > 300 else result.stderr)

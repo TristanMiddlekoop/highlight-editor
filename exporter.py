@@ -45,7 +45,8 @@ def stitch_highlights(output_dir, final_output_name='highlight_reel_horizontal.m
     subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     print('Done. Highlight reel saved as: ' + final_output_name)
 
-    os.remove(list_file)
+    if os.path.exists(list_file):
+        os.remove(list_file)
 
 if __name__ == '__main__':
     stitch_highlights('~/highlight-editor/output')

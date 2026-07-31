@@ -12,6 +12,7 @@ SPORT_PRESETS = {
     'hockey':     {'sensitivity': 1.2,  'min_gap': 25, 'clip_duration': 14},
     'cricket':    {'sensitivity': 1.5,  'min_gap': 40, 'clip_duration': 18},
     'tennis':     {'sensitivity': 1.3,  'min_gap': 20, 'clip_duration': 12},
+    'darts':      {'sensitivity': 1.2,  'min_gap': 15, 'clip_duration': 10},
     'general':    {'sensitivity': 1.25, 'min_gap': 30, 'clip_duration': 14},
 }
 
