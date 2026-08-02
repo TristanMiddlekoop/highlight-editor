@@ -16,17 +16,47 @@ from caption_generator import generate_captions, parse_captions
 from scheduler import add_to_queue, view_queue, set_posting_times, load_schedule
 from analytics import get_dashboard, load_analytics
 
-st.set_page_config(page_title="AI Highlight Editor", page_icon="🎬", layout="wide")
+st.set_page_config(page_title="HighlightOS — TM Ventures", page_icon="🎬", layout="wide")
 
-st.title("🎬 AI Sports Highlight Editor")
-st.markdown("Upload a sports video and get highlight clips automatically.")
+st.markdown("""
+<style>
+    .main-header { 
+        font-size: 2.5rem; 
+        font-weight: 800; 
+        letter-spacing: -1px;
+        margin-bottom: 0px;
+    }
+    .sub-header {
+        font-size: 0.9rem;
+        color: #5a5a6a;
+        margin-bottom: 24px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+    .metric-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px;
+        padding: 16px;
+    }
+    .stButton > button {
+        border-radius: 6px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="main-header">🎬 HighlightOS</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">by TM Ventures — AI Sports Content Engine</div>', unsafe_allow_html=True)
 
 for key, default in [('processed', False), ('ai_captions', {}), ('highlights', []), ('output_dir', ''), ('processing', False)]:
     if key not in st.session_state:
         st.session_state[key] = default
 
 with st.sidebar:
-    st.header("⚙️ Settings")
+    st.markdown("### ⚙️ Settings")
+    st.markdown("---")
     sport = st.selectbox("Sport", list(SPORT_PRESETS.keys()), index=0)
     mode = st.radio("Output Mode", ["both", "short", "long"], index=0)
     top_n = st.slider("Number of Clips", min_value=1, max_value=15, value=5)
@@ -41,7 +71,7 @@ with st.sidebar:
 
 st.divider()
 
-st.subheader("📁 Select Video")
+st.markdown("### 📁 Select Video")
 input_method = st.radio("Input method", ["Upload file", "Local file path"], horizontal=True)
 
 video_ready = False
@@ -267,3 +297,9 @@ if upcoming:
     st.subheader("🕐 Upcoming Posts")
     for post in sorted(upcoming, key=lambda x: x['scheduled_time'])[:5]:
         st.write("🕐 **" + post['scheduled_time'] + "** | " + post['platform'].upper() + " | " + os.path.basename(post['clip_path']))
+st.divider()
+st.markdown("""
+<div style='text-align: center; color: #5a5a6a; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; padding: 16px 0;'>
+    HighlightOS — TM Ventures © 2026 | <a href='https://tmventures.io' style='color: #5a5a6a;'>tmventures.io</a>
+</div>
+""", unsafe_allow_html=True)
