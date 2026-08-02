@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from analytics import track_video_processed
 
 WATCH_FOLDER = os.path.expanduser('~/highlight-editor/watch_inbox')
 OUTPUT_FOLDER = os.path.expanduser('~/highlight-editor/output')
@@ -84,6 +85,8 @@ class VideoHandler(FileSystemEventHandler):
 
             if result.returncode == 0:
                 print('✅ Pipeline complete for: ' + filename)
+                clips_count = result.stdout.count('Saved:')
+                track_video_processed(filename, sport, clips_count)
                 print(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
 
                 processed_path = os.path.join(PROCESSED_FOLDER, filename)

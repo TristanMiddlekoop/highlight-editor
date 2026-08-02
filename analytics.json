@@ -1,0 +1,21 @@
+{
+  "videos_processed": [
+    {
+      "filename": "darts_tracking_test.mp4",
+      "sport": "darts",
+      "clips_generated": 10,
+      "processed_at": "2026-08-01T20:25:11.156136",
+      "duration_seconds": null
+    }
+  ],
+  "clips_generated": [],
+  "posts_scheduled": [],
+  "posts_published": [],
+  "platform_stats": {},
+  "sport_stats": {
+    "darts": {
+      "videos": 1,
+      "clips": 10
+    }
+  }
+}
