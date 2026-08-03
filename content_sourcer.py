@@ -21,7 +21,7 @@ SPORT_SEARCH_TERMS = {
     },
     'darts': {
         'leagues': ['PDC', 'Premier League Darts', 'World Darts Championship'],
-        'search_templates': [{league} short highlights', '{league} 180s checkouts short', '{league} best moments']
+        'search_templates': ['{league} short highlights', '{league} 180s checkouts short', '{league} best moments']
     },
     'cricket': {
         'leagues': ['IPL', 'Test Cricket', 'T20 World Cup'],

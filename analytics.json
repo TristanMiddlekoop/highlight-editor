@@ -20,6 +20,27 @@
       "clips_generated": 2,
       "processed_at": "2026-08-02T18:41:49.498789",
       "duration_seconds": null
+    },
+    {
+      "filename": "darts_premier_league_darts_KM8YKZwFKYs.mp4",
+      "sport": "darts",
+      "clips_generated": 6,
+      "processed_at": "2026-08-02T19:34:42.602861",
+      "duration_seconds": null
+    },
+    {
+      "filename": "darts_premier_league_darts_KM8YKZwFKYs.mp4",
+      "sport": "darts",
+      "clips_generated": 6,
+      "processed_at": "2026-08-02T19:34:47.858060",
+      "duration_seconds": null
+    },
+    {
+      "filename": "darts_premier_league_darts_KM8YKZwFKYs.mp4",
+      "sport": "darts",
+      "clips_generated": 6,
+      "processed_at": "2026-08-02T19:34:53.023019",
+      "duration_seconds": null
     }
   ],
   "clips_generated": [],
@@ -28,8 +49,8 @@
   "platform_stats": {},
   "sport_stats": {
     "darts": {
-      "videos": 3,
-      "clips": 14
+      "videos": 6,
+      "clips": 32
     }
   }
 }

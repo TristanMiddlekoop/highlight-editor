@@ -15,6 +15,7 @@ from captions import caption_all_clips
 from caption_generator import generate_captions, parse_captions
 from scheduler import add_to_queue, view_queue, set_posting_times, load_schedule
 from analytics import get_dashboard, load_analytics
+from content_sourcer import search_and_download, SPORT_SEARCH_TERMS
 
 st.set_page_config(page_title="HighlightOS — TM Ventures", page_icon="🎬", layout="wide")
 
@@ -68,7 +69,31 @@ with st.sidebar:
         font_size = 1.3
         position = 0.88
     use_preview = st.toggle("Preview Before Download", value=True)
+st.divider()
+st.markdown("### 🔍 Source Content Automatically")
+st.markdown("Search and download sports footage automatically into the pipeline.")
 
+col_sport, col_league, col_num = st.columns([1, 1, 1])
+
+with col_sport:
+    source_sport = st.selectbox("Sport", list(SPORT_SEARCH_TERMS.keys()), key="source_sport")
+
+with col_league:
+    available_leagues = SPORT_SEARCH_TERMS[source_sport]['leagues']
+    source_league = st.selectbox("League", available_leagues, key="source_league")
+
+with col_num:
+    source_num = st.slider("Videos to find", 1, 5, 2, key="source_num")
+
+if st.button("🔍 Source Content", type="secondary"):
+    with st.spinner("Searching for " + source_sport + " — " + source_league + " content..."):
+        downloaded = search_and_download(source_sport, source_league, source_num)
+    if downloaded:
+        st.success("✅ " + str(len(downloaded)) + " videos downloaded to watch inbox. Start the watcher to process automatically.")
+        for f in downloaded:
+            st.write("📥 " + os.path.basename(f))
+    else:
+        st.warning("No new videos found. Try a different sport or league.")
 st.divider()
 
 st.markdown("### 📁 Select Video")
