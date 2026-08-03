@@ -15,6 +15,7 @@ SUPPORTED_FORMATS = {'.mp4', '.mov', '.webm', '.avi', '.mkv'}
 os.makedirs(WATCH_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
+ENABLE_CAPTIONS = False
 
 
 def detect_sport(filename):
@@ -74,14 +75,18 @@ class VideoHandler(FileSystemEventHandler):
         print('⚙️  Running highlight pipeline...')
 
         try:
-            result = subprocess.run([
+            cmd = [
                 sys.executable,
                 os.path.expanduser('~/highlight-editor/main.py'),
                 filepath,
                 'both',
                 sport,
                 '5'
-            ], capture_output=True, text=True, timeout=3600)
+            ]
+            if ENABLE_CAPTIONS:
+                cmd.extend(['captions', '1.3', '0.88'])
+
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
 
             if result.returncode == 0:
                 print('✅ Pipeline complete for: ' + filename)

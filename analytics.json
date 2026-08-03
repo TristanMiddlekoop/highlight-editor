@@ -41,6 +41,27 @@
       "clips_generated": 6,
       "processed_at": "2026-08-02T19:34:53.023019",
       "duration_seconds": null
+    },
+    {
+      "filename": "darts_speed_test.mp4",
+      "sport": "darts",
+      "clips_generated": 10,
+      "processed_at": "2026-08-02T19:58:49.126054",
+      "duration_seconds": null
+    },
+    {
+      "filename": "darts_speed_test.mp4",
+      "sport": "darts",
+      "clips_generated": 10,
+      "processed_at": "2026-08-02T19:58:51.354142",
+      "duration_seconds": null
+    },
+    {
+      "filename": "darts_speed_test.mp4",
+      "sport": "darts",
+      "clips_generated": 10,
+      "processed_at": "2026-08-02T19:58:51.357256",
+      "duration_seconds": null
     }
   ],
   "clips_generated": [],
@@ -49,8 +70,8 @@
   "platform_stats": {},
   "sport_stats": {
     "darts": {
-      "videos": 6,
-      "clips": 32
+      "videos": 9,
+      "clips": 62
     }
   }
 }
