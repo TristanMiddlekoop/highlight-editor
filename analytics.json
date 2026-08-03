@@ -6,6 +6,20 @@
       "clips_generated": 10,
       "processed_at": "2026-08-01T20:25:11.156136",
       "duration_seconds": null
+    },
+    {
+      "filename": "darts_pdc_ninedarter.mp4",
+      "sport": "darts",
+      "clips_generated": 2,
+      "processed_at": "2026-08-02T18:41:49.037521",
+      "duration_seconds": null
+    },
+    {
+      "filename": "darts_pdc_ninedarter.mp4",
+      "sport": "darts",
+      "clips_generated": 2,
+      "processed_at": "2026-08-02T18:41:49.498789",
+      "duration_seconds": null
     }
   ],
   "clips_generated": [],
@@ -14,8 +28,8 @@
   "platform_stats": {},
   "sport_stats": {
     "darts": {
-      "videos": 1,
-      "clips": 10
+      "videos": 3,
+      "clips": 14
     }
   }
 }
