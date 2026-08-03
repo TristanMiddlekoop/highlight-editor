@@ -9,3 +9,4 @@ __pycache__/
 *.DS_Store
 youtube_credentials.json
 youtube_token.pickle
+*.part
