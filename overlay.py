@@ -278,9 +278,11 @@ def apply_overlay_to_clip(clip_path, output_path, overlay_config):
     return output_path
 
 
-def apply_overlays_to_folder(output_dir, overlay_config):
+def apply_overlays_to_folder(output_dir, overlay_config, recent_only=False):
+    import time
+    cutoff = time.time() - 300 if recent_only else 0
     clips = sorted([f for f in glob.glob(os.path.join(output_dir, 'highlight_*_vertical.mp4'))
-                   if '_overlay' not in f])
+                   if '_overlay' not in f and os.path.getmtime(f) > cutoff])
     clips += sorted([f for f in glob.glob(os.path.join(output_dir, 'highlight_*_horizontal.mp4'))
                     if '_overlay' not in f])
 
