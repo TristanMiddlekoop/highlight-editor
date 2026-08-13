@@ -6,6 +6,7 @@ from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from analytics import track_video_processed
+from overlay import apply_overlays_to_folder
 
 WATCH_FOLDER = os.path.expanduser('~/highlight-editor/watch_inbox')
 OUTPUT_FOLDER = os.path.expanduser('~/highlight-editor/output')
@@ -92,6 +93,25 @@ class VideoHandler(FileSystemEventHandler):
                 print('✅ Pipeline complete for: ' + filename)
                 clips_count = result.stdout.count('Saved:')
                 track_video_processed(filename, sport, clips_count)
+                overlay_config = {
+                    'home_team': 'HOME',
+                    'away_team': 'AWAY',
+                    'home_score': 0,
+                    'away_score': 0,
+                    'game_time': '00:00',
+                    'period': 'Q1',
+                    'ticker_text': '',
+                    'sport': sport,
+                    'hype_score': 75,
+                    'team_color': [255, 140, 0],
+                    'player_name': '',
+                    'stat_line': '',
+                    'show_scoreboard': False,
+                    'show_lower_third': False,
+                    'show_label': True
+                }
+                print('🎬 Applying broadcast overlay...')
+                apply_overlays_to_folder(OUTPUT_FOLDER, overlay_config)
                 print(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
 
                 processed_path = os.path.join(PROCESSED_FOLDER, filename)
