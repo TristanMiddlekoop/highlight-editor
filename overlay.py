@@ -9,9 +9,24 @@ FONTS_DIR = os.path.expanduser('~/highlight-editor/fonts')
 FONT_BOLD = '/System/Library/Fonts/SFNSMono.ttf'
 FONT_REGULAR = '/System/Library/Fonts/SFNSMono.ttf'
 FONT_LIGHT = '/System/Library/Fonts/Geneva.ttf'
-
+# Font cache — load once, reuse every frame
+_font_cache = {}
 
 def get_font(style='bold', size=20):
+    key = style + '_' + str(size)
+    if key not in _font_cache:
+        try:
+            if style == 'bold':
+                _font_cache[key] = ImageFont.truetype(FONT_BOLD, size)
+            elif style == 'regular':
+                _font_cache[key] = ImageFont.truetype(FONT_REGULAR, size)
+            elif style == 'light':
+                _font_cache[key] = ImageFont.truetype(FONT_LIGHT, size)
+        except:
+            _font_cache[key] = ImageFont.load_default()
+    return _font_cache[key]
+
+
     try:
         if style == 'bold':
             return ImageFont.truetype(FONT_BOLD, size)
