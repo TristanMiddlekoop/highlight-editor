@@ -111,6 +111,27 @@
       "clips_generated": 10,
       "processed_at": "2026-08-20T11:45:05.899470",
       "duration_seconds": null
+    },
+    {
+      "filename": "basketball_game4.mp4",
+      "sport": "basketball",
+      "clips_generated": 10,
+      "processed_at": "2026-08-20T12:18:25.805649",
+      "duration_seconds": null
+    },
+    {
+      "filename": "basketball_game4.mp4",
+      "sport": "basketball",
+      "clips_generated": 10,
+      "processed_at": "2026-08-20T12:18:25.880257",
+      "duration_seconds": null
+    },
+    {
+      "filename": "basketball_game4.mp4",
+      "sport": "basketball",
+      "clips_generated": 10,
+      "processed_at": "2026-08-20T12:18:27.039594",
+      "duration_seconds": null
     }
   ],
   "clips_generated": [],
@@ -123,8 +144,8 @@
       "clips": 102
     },
     "basketball": {
-      "videos": 3,
-      "clips": 30
+      "videos": 6,
+      "clips": 60
     }
   }
 }

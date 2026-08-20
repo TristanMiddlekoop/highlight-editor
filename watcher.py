@@ -2,6 +2,7 @@ import os
 import time
 import subprocess
 import sys
+import json
 from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -32,9 +33,7 @@ def detect_sport(filename):
         'hockey': ['hockey', 'nhl', 'ice'],
         'cricket': ['cricket', 'ipl', 'test_match'],
         'tennis': ['tennis', 'wimbledon', 'usopen', 'atp', 'wta'],
-        'darts': ['darts', 'pdc', 'bdo', 'oche', 'bullseye', 'checkout']
     }
-
     for sport, keywords in sport_keywords.items():
         for keyword in keywords:
             if keyword in filename_lower:
@@ -49,21 +48,15 @@ class VideoHandler(FileSystemEventHandler):
     def on_created(self, event):
         if event.is_directory:
             return
-
         filepath = event.src_path
         ext = Path(filepath).suffix.lower()
-
         if ext not in SUPPORTED_FORMATS:
             return
-
         if filepath in self.processing:
             return
-
         time.sleep(2)
-
         if not os.path.exists(filepath):
             return
-
         self.processing.add(filepath)
         print('\n📥 New video detected: ' + os.path.basename(filepath))
         self.process_video(filepath)
@@ -71,18 +64,21 @@ class VideoHandler(FileSystemEventHandler):
 
     def process_video(self, filepath):
         filename = os.path.basename(filepath)
-        
-        # Use client config if available
+
         client_config = getattr(self, 'client_config', None)
         if client_config:
             sport = client_config.get('sport', detect_sport(filename))
             client_name = client_config.get('client_name', 'Unknown')
+            team_name = client_config.get('team_name', '')
+            league = client_config.get('league', '')
             team_color = client_config.get('branding', {}).get('primary_color', [255, 140, 0])
             watermark = client_config.get('branding', {}).get('watermark_text', 'TM VENTURES')
             players = client_config.get('players', [])
             print('👤 Client: ' + client_name)
         else:
             sport = detect_sport(filename)
+            team_name = ''
+            league = ''
             team_color = [255, 140, 0]
             watermark = 'TM VENTURES'
             players = []
@@ -92,6 +88,16 @@ class VideoHandler(FileSystemEventHandler):
         print('⚙️  Running highlight pipeline...')
 
         try:
+            # Save client context for main.py to read
+            client_context = {
+                'team_name': team_name,
+                'league': league,
+                'players': players
+            }
+            context_file = os.path.expanduser('~/highlight-editor/client_context.json')
+            with open(context_file, 'w') as f:
+                json.dump(client_context, f)
+
             cmd = [
                 sys.executable,
                 os.path.expanduser('~/highlight-editor/main.py'),
@@ -109,7 +115,7 @@ class VideoHandler(FileSystemEventHandler):
                 print('✅ Pipeline complete for: ' + filename)
                 clips_count = result.stdout.count('Saved:')
                 track_video_processed(filename, sport, clips_count)
-                              # Build ticker from player roster if available
+
                 ticker = ''
                 if players:
                     ticker = '  |  '.join([p['name'] + ' #' + str(p['number']) + ' ' + p['position'] for p in players[:4]])
@@ -150,40 +156,41 @@ class VideoHandler(FileSystemEventHandler):
         except Exception as e:
             print('❌ Error processing ' + filename + ': ' + str(e))
 
+
 def run_client_watcher():
     print('========================================')
     print('   TM VENTURES — CLIENT PIPELINE WATCHER')
     print('========================================')
-    
+
     observers = []
     active_clients = []
-    
+
     if os.path.exists(CLIENTS_DIR):
         for client_id in os.listdir(CLIENTS_DIR):
             client_config = load_client(client_id)
             if client_config and client_config.get('active'):
                 inbox = get_client_inbox(client_id)
                 os.makedirs(inbox, exist_ok=True)
-                
+
                 handler = VideoHandler()
                 handler.client_id = client_id
                 handler.client_config = client_config
-                
+
                 observer = Observer()
                 observer.schedule(handler, inbox, recursive=False)
                 observer.start()
                 observers.append(observer)
                 active_clients.append(client_config['client_name'])
                 print('👤 Watching: ' + client_config['client_name'] + ' → ' + inbox)
-    
+
     if not active_clients:
         print('⚠️  No active clients found. Add clients via client_manager.py')
     else:
         print('\n✅ Watching ' + str(len(active_clients)) + ' client inboxes')
-    
+
     print('Press Ctrl+C to stop.')
     print('========================================\n')
-    
+
     try:
         while True:
             time.sleep(1)
@@ -191,9 +198,11 @@ def run_client_watcher():
         for observer in observers:
             observer.stop()
         print('\n⛔ Client watcher stopped.')
-    
+
     for observer in observers:
         observer.join()
+
+
 def run_watcher():
     print('========================================')
     print('   TM VENTURES — AUTO PIPELINE WATCHER')
@@ -227,7 +236,6 @@ def run_watcher():
 
 
 if __name__ == '__main__':
-    import sys
     if len(sys.argv) > 1 and sys.argv[1] == 'clients':
         run_client_watcher()
     else:

@@ -6,7 +6,7 @@ from exporter import stitch_highlights
 from captions import caption_all_clips
 from caption_generator import generate_and_save_captions
 
-def run(video_path, mode='both', sport='general', top_n=None, captions=False, font_size=1.0, position=0.82):
+def run(video_path, mode='both', sport='general', top_n=None, captions=False, font_size=1.0, position=0.82, team_name='', league='', players=None):
     video_path = os.path.expanduser(video_path)
     if not os.path.exists(video_path):
         print('Error: Video file not found at ' + video_path)
@@ -69,8 +69,19 @@ def run(video_path, mode='both', sport='general', top_n=None, captions=False, fo
         print('')
 
     print('--- AI CAPTIONS + HASHTAGS ---')
-    generate_and_save_captions(sport, highlights, clip_duration=clip_duration)
-    print('')
+    # Load client context if available
+    context_file = os.path.expanduser('~/highlight-editor/client_context.json')
+    team_name = ''
+    league = ''
+    players = None
+    if os.path.exists(context_file):
+        import json
+        with open(context_file, 'r') as f:
+            ctx = json.load(f)
+            team_name = ctx.get('team_name', '')
+            league = ctx.get('league', '')
+            players = ctx.get('players', None)
+    generate_and_save_captions(sport, highlights, clip_duration=clip_duration, team_name=team_name, league=league, players=players)
 
     print('DONE. Check ~/highlight-editor/output/')
     print('  Short form: individual _vertical.mp4 clips')
