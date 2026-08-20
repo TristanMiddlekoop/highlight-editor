@@ -6,3 +6,7 @@ openai-whisper
 moviepy
 soundfile
 audioread
+anthropic
+Pillow
+yt-dlp
+watchdog
