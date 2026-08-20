@@ -7,8 +7,10 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from analytics import track_video_processed
 from overlay import apply_overlays_to_folder
+from client_manager import load_client, get_client_inbox, get_client_output
 
 WATCH_FOLDER = os.path.expanduser('~/highlight-editor/watch_inbox')
+CLIENTS_DIR = os.path.expanduser('~/highlight-editor/clients')
 OUTPUT_FOLDER = os.path.expanduser('~/highlight-editor/output')
 PROCESSED_FOLDER = os.path.expanduser('~/highlight-editor/watch_processed')
 SUPPORTED_FORMATS = {'.mp4', '.mov', '.webm', '.avi', '.mkv'}
@@ -111,7 +113,7 @@ class VideoHandler(FileSystemEventHandler):
                     'show_label': True
                 }
                 print('🎬 Applying broadcast overlay...')
-                apply_overlays_to_folder(OUTPUT_FOLDER, overlay_config)
+                apply_overlays_to_folder(OUTPUT_FOLDER, overlay_config, recent_only=True)
                 print(result.stdout[-500:] if len(result.stdout) > 500 else result.stdout)
 
                 processed_path = os.path.join(PROCESSED_FOLDER, filename)
@@ -129,7 +131,50 @@ class VideoHandler(FileSystemEventHandler):
         except Exception as e:
             print('❌ Error processing ' + filename + ': ' + str(e))
 
-
+def run_client_watcher():
+    print('========================================')
+    print('   TM VENTURES — CLIENT PIPELINE WATCHER')
+    print('========================================')
+    
+    observers = []
+    active_clients = []
+    
+    if os.path.exists(CLIENTS_DIR):
+        for client_id in os.listdir(CLIENTS_DIR):
+            client_config = load_client(client_id)
+            if client_config and client_config.get('active'):
+                inbox = get_client_inbox(client_id)
+                os.makedirs(inbox, exist_ok=True)
+                
+                handler = VideoHandler()
+                handler.client_id = client_id
+                handler.client_config = client_config
+                
+                observer = Observer()
+                observer.schedule(handler, inbox, recursive=False)
+                observer.start()
+                observers.append(observer)
+                active_clients.append(client_config['client_name'])
+                print('👤 Watching: ' + client_config['client_name'] + ' → ' + inbox)
+    
+    if not active_clients:
+        print('⚠️  No active clients found. Add clients via client_manager.py')
+    else:
+        print('\n✅ Watching ' + str(len(active_clients)) + ' client inboxes')
+    
+    print('Press Ctrl+C to stop.')
+    print('========================================\n')
+    
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        for observer in observers:
+            observer.stop()
+        print('\n⛔ Client watcher stopped.')
+    
+    for observer in observers:
+        observer.join()
 def run_watcher():
     print('========================================')
     print('   TM VENTURES — AUTO PIPELINE WATCHER')
@@ -163,4 +208,8 @@ def run_watcher():
 
 
 if __name__ == '__main__':
-    run_watcher()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == 'clients':
+        run_client_watcher()
+    else:
+        run_watcher()

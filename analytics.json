@@ -90,6 +90,13 @@
       "clips_generated": 10,
       "processed_at": "2026-08-13T13:10:21.888120",
       "duration_seconds": null
+    },
+    {
+      "filename": "basketball_game1.mp4",
+      "sport": "basketball",
+      "clips_generated": 10,
+      "processed_at": "2026-08-19T23:05:19.788450",
+      "duration_seconds": null
     }
   ],
   "clips_generated": [],
@@ -100,6 +107,10 @@
     "darts": {
       "videos": 13,
       "clips": 102
+    },
+    "basketball": {
+      "videos": 1,
+      "clips": 10
     }
   }
 }
