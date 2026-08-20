@@ -71,7 +71,21 @@ class VideoHandler(FileSystemEventHandler):
 
     def process_video(self, filepath):
         filename = os.path.basename(filepath)
-        sport = detect_sport(filename)
+        
+        # Use client config if available
+        client_config = getattr(self, 'client_config', None)
+        if client_config:
+            sport = client_config.get('sport', detect_sport(filename))
+            client_name = client_config.get('client_name', 'Unknown')
+            team_color = client_config.get('branding', {}).get('primary_color', [255, 140, 0])
+            watermark = client_config.get('branding', {}).get('watermark_text', 'TM VENTURES')
+            players = client_config.get('players', [])
+            print('👤 Client: ' + client_name)
+        else:
+            sport = detect_sport(filename)
+            team_color = [255, 140, 0]
+            watermark = 'TM VENTURES'
+            players = []
 
         print('🏃 Auto-processing: ' + filename)
         print('🎯 Sport detected: ' + sport)
@@ -95,6 +109,11 @@ class VideoHandler(FileSystemEventHandler):
                 print('✅ Pipeline complete for: ' + filename)
                 clips_count = result.stdout.count('Saved:')
                 track_video_processed(filename, sport, clips_count)
+                              # Build ticker from player roster if available
+                ticker = ''
+                if players:
+                    ticker = '  |  '.join([p['name'] + ' #' + str(p['number']) + ' ' + p['position'] for p in players[:4]])
+
                 overlay_config = {
                     'home_team': 'HOME',
                     'away_team': 'AWAY',
@@ -102,10 +121,10 @@ class VideoHandler(FileSystemEventHandler):
                     'away_score': 0,
                     'game_time': '00:00',
                     'period': 'Q1',
-                    'ticker_text': '',
+                    'ticker_text': ticker,
                     'sport': sport,
                     'hype_score': 75,
-                    'team_color': [255, 140, 0],
+                    'team_color': team_color,
                     'player_name': '',
                     'stat_line': '',
                     'show_scoreboard': False,
