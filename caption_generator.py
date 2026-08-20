@@ -1,8 +1,9 @@
+
 import anthropic
 import os
 
 
-def generate_captions(sport, timestamps, scores, clip_duration=14):
+def generate_captions(sport, timestamps, scores, clip_duration=14, team_name='', league='', players=None):
     client = anthropic.Anthropic()
 
     highlights_text = ""
@@ -12,12 +13,30 @@ def generate_captions(sport, timestamps, scores, clip_duration=14):
         flame = "🔥" if score >= 70 else ""
         highlights_text += f"Clip {i+1}: {minutes}:{str(seconds).zfill(2)} — Hype Score: {score} {flame}\n"
 
-    prompt = f"""You are a social media expert specializing in sports content. 
-    
-I have {len(timestamps)} highlight clips from a {sport} game. Each clip is {clip_duration} seconds long.
+    # Build player context
+    player_context = ''
+    if players:
+        player_context = '\n\nROSTER:\n'
+        for p in players:
+            player_context += f"#{p['number']} {p['name']} — {p['position']}"
+            if p.get('fun_fact'):
+                player_context += f" ({p['fun_fact']})"
+            player_context += '\n'
+
+    team_context = ''
+    if team_name:
+        team_context = f'\nTeam: {team_name}'
+    if league:
+        team_context += f'\nLeague: {league}'
+
+    prompt = f"""You are a social media expert specializing in sports content.
+
+I have {len(timestamps)} highlight clips from a {sport} game. Each clip is {clip_duration} seconds long.{team_context}{player_context}
 
 Here are the clips with their hype scores:
 {highlights_text}
+
+When writing captions reference the team name and player names where relevant to make the content feel authentic and specific. Use player names naturally — don't force them into every caption but use them when it makes sense.
 
 Generate social media captions and hashtags for each clip. For each clip provide:
 1. An Instagram/TikTok caption (punchy, engaging, under 150 characters)
@@ -38,7 +57,7 @@ HASHTAGS: [hashtags]
 Keep the tone energetic and authentic. Reference the hype score to gauge how exciting each moment was."""
 
     message = client.messages.create(
-        model="claude-sonnet-4-5",
+        model="claude-sonnet-4-6",
         max_tokens=1000,
         messages=[
             {"role": "user", "content": prompt}
@@ -74,7 +93,7 @@ def parse_captions(caption_text):
     return clips
 
 
-def generate_and_save_captions(sport, highlights, clip_duration=14, output_dir=None):
+def generate_and_save_captions(sport, highlights, clip_duration=14, output_dir=None, team_name='', league='', players=None):
     if output_dir is None:
         output_dir = os.path.expanduser('~/highlight-editor/output')
 
@@ -82,7 +101,7 @@ def generate_and_save_captions(sport, highlights, clip_duration=14, output_dir=N
     scores = [h['score'] for h in highlights]
 
     print('Generating AI captions and hashtags...')
-    caption_text = generate_captions(sport, timestamps, scores, clip_duration)
+    caption_text = generate_captions(sport, timestamps, scores, clip_duration, team_name, league, players)
     captions = parse_captions(caption_text)
 
     output_file = os.path.join(output_dir, 'captions.txt')
