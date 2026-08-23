@@ -16,6 +16,7 @@ from caption_generator import generate_captions, parse_captions
 from scheduler import add_to_queue, view_queue, set_posting_times, load_schedule
 from analytics import get_dashboard, load_analytics
 from content_sourcer import search_and_download, SPORT_SEARCH_TERMS
+from client_manager import load_client, list_clients, get_client_inbox, create_client, add_player, update_branding
 
 st.set_page_config(page_title="HighlightOS — TM Ventures", page_icon="🎬", layout="wide")
 
@@ -69,6 +70,86 @@ with st.sidebar:
         font_size = 1.3
         position = 0.88
     use_preview = st.toggle("Preview Before Download", value=True)
+    st.divider()
+st.markdown("### 👤 Client Management")
+
+client_tab1, client_tab2 = st.tabs(["View Clients", "Add New Client"])
+
+with client_tab1:
+    clients = list_clients()
+    if clients:
+        for client in clients:
+            if client.get('active'):
+                with st.expander(client['client_name'] + ' — ' + client['sport'].capitalize()):
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        st.write('**Team:** ' + client['team_name'])
+                        st.write('**League:** ' + client.get('league', 'N/A'))
+                        st.write('**Sport:** ' + client['sport'].capitalize())
+                        st.write('**Players:** ' + str(len(client.get('players', []))))
+                    with col_b:
+                        st.write('**Client ID:** ' + client['client_id'])
+                        st.write('**Platforms:** ' + ', '.join(client.get('posting', {}).get('platforms', [])))
+                        inbox = get_client_inbox(client['client_id'])
+                        st.write('**Inbox:** ' + inbox)
+                    if client.get('players'):
+                        st.write('**Roster:**')
+                        for p in client['players']:
+                            st.write('  #' + str(p['number']) + ' ' + p['name'] + ' — ' + p['position'])
+    else:
+        st.info('No clients yet. Add your first client below.')
+
+with client_tab2:
+    st.markdown('#### Create New Client')
+    col1, col2 = st.columns(2)
+    with col1:
+        new_client_name = st.text_input('Organization Name', placeholder='Naples Eagles')
+        new_team_name = st.text_input('Team Name', placeholder='Naples Eagles Basketball')
+        new_sport = st.selectbox('Sport', list(SPORT_PRESETS.keys()), key='new_client_sport')
+    with col2:
+        new_client_id = st.text_input('Client ID', placeholder='naples_eagles_basketball')
+        new_league = st.text_input('League', placeholder='Florida High School Basketball')
+        new_email = st.text_input('Contact Email', placeholder='coach@napleseagles.com')
+
+    if st.button('✅ Create Client', type='primary'):
+        if new_client_name and new_client_id and new_sport:
+            config = create_client(
+                client_id=new_client_id,
+                client_name=new_client_name,
+                sport=new_sport,
+                team_name=new_team_name or new_client_name,
+                league=new_league
+            )
+            if new_email and config:
+                from client_manager import save_client
+                config['contact_email'] = new_email
+                save_client(new_client_id, config)
+            st.success('✅ Client created: ' + new_client_name)
+            st.rerun()
+        else:
+            st.error('Please fill in Organization Name, Client ID and Sport.')
+
+    st.markdown('#### Add Player to Client')
+    existing_clients = list_clients()
+    if existing_clients:
+        player_client = st.selectbox('Select Client', [c['client_id'] for c in existing_clients if c.get('active')], key='player_client')
+        col3, col4 = st.columns(2)
+        with col3:
+            player_name = st.text_input('Player Name', placeholder='Marcus Johnson')
+            player_number = st.number_input('Jersey Number', min_value=0, max_value=99, value=1)
+        with col4:
+            player_position = st.text_input('Position', placeholder='Point Guard')
+            player_fact = st.text_input('Fun Fact', placeholder='Averaging 18 points per game')
+
+        if st.button('➕ Add Player', type='secondary'):
+            if player_name and player_position:
+                add_player(player_client, player_name, int(player_number), player_position, fun_fact=player_fact)
+                st.success('✅ Player added: ' + player_name)
+                st.rerun()
+            else:
+                st.error('Please fill in Player Name and Position.')
+    else:
+        st.info('Create a client first before adding players.')
 st.divider()
 st.markdown("### 🔍 Source Content Automatically")
 st.markdown("Search and download sports footage automatically into the pipeline.")
