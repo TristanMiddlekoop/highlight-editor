@@ -191,6 +191,13 @@ def run_client_watcher():
     print('Press Ctrl+C to stop.')
     print('========================================\n')
 
+        # Start monthly report scheduler in background
+    import threading
+    from scheduler_monthly import run_scheduler
+    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+    scheduler_thread.start()
+    print('📅 Monthly report scheduler running in background\n')
+
     try:
         while True:
             time.sleep(1)
