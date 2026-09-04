@@ -16,7 +16,7 @@ from caption_generator import generate_captions, parse_captions
 from scheduler import add_to_queue, view_queue, set_posting_times, load_schedule
 from analytics import get_dashboard, load_analytics
 from content_sourcer import search_and_download, SPORT_SEARCH_TERMS
-from client_manager import load_client, list_clients, get_client_inbox, create_client, add_player, update_branding
+from client_manager import load_client, list_clients, get_client_inbox, get_client_output, create_client, add_player, update_branding
 
 st.set_page_config(page_title="HighlightOS — TM Ventures", page_icon="🎬", layout="wide")
 
@@ -80,22 +80,45 @@ with client_tab1:
     if clients:
         for client in clients:
             if client.get('active'):
-                with st.expander(client['client_name'] + ' — ' + client['sport'].capitalize()):
-                    col_a, col_b = st.columns(2)
+                inbox = get_client_inbox(client['client_id'])
+                output = get_client_output(client['client_id'])
+                
+                # Count files in inbox and output
+                import glob
+                inbox_files = glob.glob(os.path.join(inbox, '*.mp4')) + glob.glob(os.path.join(inbox, '*.mov')) + glob.glob(os.path.join(inbox, '*.webm'))
+                output_files = glob.glob(os.path.join(output, '*_vertical.mp4'))
+                overlay_files = glob.glob(os.path.join(output, '*_overlay.mp4'))
+                
+                # Status indicator
+                if inbox_files:
+                    status = '🟡 ' + str(len(inbox_files)) + ' file(s) waiting'
+                else:
+                    status = '🟢 Inbox clear'
+                
+                with st.expander(client['client_name'] + ' — ' + client['sport'].capitalize() + ' — ' + status):
+                    col_a, col_b, col_c = st.columns(3)
                     with col_a:
+                        st.metric('Inbox', str(len(inbox_files)) + ' files')
                         st.write('**Team:** ' + client['team_name'])
                         st.write('**League:** ' + client.get('league', 'N/A'))
-                        st.write('**Sport:** ' + client['sport'].capitalize())
-                        st.write('**Players:** ' + str(len(client.get('players', []))))
                     with col_b:
-                        st.write('**Client ID:** ' + client['client_id'])
+                        st.metric('Clips produced', str(len(output_files)))
+                        st.metric('Overlay clips', str(len(overlay_files)))
+                    with col_c:
+                        st.metric('Players', str(len(client.get('players', []))))
+                        st.write('**Sport:** ' + client['sport'].capitalize())
                         st.write('**Platforms:** ' + ', '.join(client.get('posting', {}).get('platforms', [])))
-                        inbox = get_client_inbox(client['client_id'])
-                        st.write('**Inbox:** ' + inbox)
+                    
+                    if inbox_files:
+                        st.warning('📥 Files waiting in inbox:')
+                        for f in inbox_files:
+                            st.write('  • ' + os.path.basename(f))
+                    
                     if client.get('players'):
                         st.write('**Roster:**')
                         for p in client['players']:
                             st.write('  #' + str(p['number']) + ' ' + p['name'] + ' — ' + p['position'])
+    
     else:
         st.info('No clients yet. Add your first client below.')
 
