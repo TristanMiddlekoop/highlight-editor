@@ -10,3 +10,6 @@ anthropic
 Pillow
 yt-dlp
 watchdog
+schedule
+torch
+torchaudio
