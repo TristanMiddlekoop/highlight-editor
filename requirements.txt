@@ -2,7 +2,6 @@ streamlit
 librosa
 numpy
 opencv-python-headless
-openai-whisper
 moviepy
 soundfile
 audioread
@@ -11,5 +10,3 @@ Pillow
 yt-dlp
 watchdog
 schedule
-torch
-torchaudio
