@@ -10,3 +10,4 @@ Pillow
 yt-dlp
 watchdog
 schedule
+gunicorn
