@@ -121,7 +121,7 @@ class VideoHandler(FileSystemEventHandler):
                     ticker = '  |  '.join([p['name'] + ' #' + str(p['number']) + ' ' + p['position'] for p in players[:4]])
 
                 overlay_config = {
-                    'home_team': 'HOME',
+                    'home_team': team_name if team_name else 'HOME',
                     'away_team': 'AWAY',
                     'home_score': 0,
                     'away_score': 0,
