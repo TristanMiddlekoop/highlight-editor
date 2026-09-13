@@ -110,7 +110,7 @@ def api_status():
         'players': len(config.get('players', []))
     })
 
- @app.route('/api/notify/<client_id>', methods=['POST'])
+@app.route('/api/notify/<client_id>', methods=['POST'])
 def notify_client(client_id):
     config = load_client(client_id)
     if not config:
