@@ -1,4 +1,3 @@
-
 import streamlit as st
 import os
 import sys
@@ -16,36 +15,16 @@ from caption_generator import generate_captions, parse_captions
 from scheduler import add_to_queue, view_queue, set_posting_times, load_schedule
 from analytics import get_dashboard, load_analytics
 from content_sourcer import search_and_download, SPORT_SEARCH_TERMS
-from client_manager import load_client, list_clients, get_client_inbox, get_client_output, create_client, add_player, update_branding
+from client_manager import load_client, list_clients, get_client_inbox, get_client_output, create_client, add_player, update_branding, save_client
 
 st.set_page_config(page_title="HighlightOS — TM Ventures", page_icon="🎬", layout="wide")
 
 st.markdown("""
 <style>
-    .main-header { 
-        font-size: 2.5rem; 
-        font-weight: 800; 
-        letter-spacing: -1px;
-        margin-bottom: 0px;
-    }
-    .sub-header {
-        font-size: 0.9rem;
-        color: #5a5a6a;
-        margin-bottom: 24px;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-    }
-    .metric-card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 10px;
-        padding: 16px;
-    }
-    .stButton > button {
-        border-radius: 6px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
+    .main-header { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0px; }
+    .sub-header { font-size: 0.9rem; color: #5a5a6a; margin-bottom: 24px; letter-spacing: 2px; text-transform: uppercase; }
+    .metric-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 16px; }
+    .stButton > button { border-radius: 6px; font-weight: 600; letter-spacing: 0.5px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -71,9 +50,10 @@ with st.sidebar:
         position = 0.88
     use_preview = st.toggle("Preview Before Download", value=True)
     st.divider()
+
 st.markdown("### 👤 Client Management")
 
-client_tab1, client_tab2 = st.tabs(["View Clients", "Add New Client"])
+client_tab1, client_tab2, client_tab3 = st.tabs(["View Clients", "Add New Client", "Onboarding Checklist"])
 
 with client_tab1:
     clients = list_clients()
@@ -82,19 +62,13 @@ with client_tab1:
             if client.get('active'):
                 inbox = get_client_inbox(client['client_id'])
                 output = get_client_output(client['client_id'])
-                
-                # Count files in inbox and output
-                import glob
                 inbox_files = glob.glob(os.path.join(inbox, '*.mp4')) + glob.glob(os.path.join(inbox, '*.mov')) + glob.glob(os.path.join(inbox, '*.webm'))
                 output_files = glob.glob(os.path.join(output, '*_vertical.mp4'))
                 overlay_files = glob.glob(os.path.join(output, '*_overlay.mp4'))
-                
-                # Status indicator
                 if inbox_files:
                     status = '🟡 ' + str(len(inbox_files)) + ' file(s) waiting'
                 else:
                     status = '🟢 Inbox clear'
-                
                 with st.expander(client['client_name'] + ' — ' + client['sport'].capitalize() + ' — ' + status):
                     col_a, col_b, col_c = st.columns(3)
                     with col_a:
@@ -108,17 +82,14 @@ with client_tab1:
                         st.metric('Players', str(len(client.get('players', []))))
                         st.write('**Sport:** ' + client['sport'].capitalize())
                         st.write('**Platforms:** ' + ', '.join(client.get('posting', {}).get('platforms', [])))
-                    
                     if inbox_files:
                         st.warning('📥 Files waiting in inbox:')
                         for f in inbox_files:
                             st.write('  • ' + os.path.basename(f))
-                    
                     if client.get('players'):
                         st.write('**Roster:**')
                         for p in client['players']:
                             st.write('  #' + str(p['number']) + ' ' + p['name'] + ' — ' + p['position'])
-    
     else:
         st.info('No clients yet. Add your first client below.')
 
@@ -144,7 +115,6 @@ with client_tab2:
                 league=new_league
             )
             if new_email and config:
-                from client_manager import save_client
                 config['contact_email'] = new_email
                 save_client(new_client_id, config)
             st.success('✅ Client created: ' + new_client_name)
@@ -163,7 +133,6 @@ with client_tab2:
         with col4:
             player_position = st.text_input('Position', placeholder='Point Guard')
             player_fact = st.text_input('Fun Fact', placeholder='Averaging 18 points per game')
-
         if st.button('➕ Add Player', type='secondary'):
             if player_name and player_position:
                 add_player(player_client, player_name, int(player_number), player_position, fun_fact=player_fact)
@@ -173,19 +142,53 @@ with client_tab2:
                 st.error('Please fill in Player Name and Position.')
     else:
         st.info('Create a client first before adding players.')
+
+with client_tab3:
+    st.markdown('#### Client Onboarding Checklist')
+    onboard_clients = list_clients()
+    if onboard_clients:
+        selected_client_id = st.selectbox('Select Client', [c['client_id'] for c in onboard_clients if c.get('active')], key='onboard_client')
+        config = load_client(selected_client_id)
+        if config:
+            st.markdown('---')
+            st.markdown('**Onboarding progress for: ' + config['client_name'] + '**')
+
+            checks = {
+                '✅ Client created': True,
+                '✅ Sport configured': bool(config.get('sport')),
+                '✅ Team name set': bool(config.get('team_name')),
+                '⬜ League set': bool(config.get('league')),
+                '⬜ Contact email added': bool(config.get('contact_email')),
+                '⬜ Players added to roster': len(config.get('players', [])) > 0,
+                '⬜ Social platforms configured': len(config.get('posting', {}).get('platforms', [])) > 0,
+                '⬜ Team colors set': config.get('branding', {}).get('primary_color') != [255, 140, 0],
+                '⬜ First video processed': False,
+            }
+
+            completed = sum(1 for v in checks.values() if v)
+            total = len(checks)
+            st.progress(completed / total)
+            st.write(str(completed) + ' of ' + str(total) + ' steps complete')
+            st.markdown('')
+
+            for step, done in checks.items():
+                if done:
+                    st.success(step.replace('⬜', '').replace('✅', '✅'))
+                else:
+                    st.warning(step.replace('✅', '').replace('⬜', '⬜'))
+    else:
+        st.info('No clients yet. Create a client first.')
+
 st.divider()
 st.markdown("### 🔍 Source Content Automatically")
 st.markdown("Search and download sports footage automatically into the pipeline.")
 
 col_sport, col_league, col_num = st.columns([1, 1, 1])
-
 with col_sport:
     source_sport = st.selectbox("Sport", list(SPORT_SEARCH_TERMS.keys()), key="source_sport")
-
 with col_league:
     available_leagues = SPORT_SEARCH_TERMS[source_sport]['leagues']
     source_league = st.selectbox("League", available_leagues, key="source_league")
-
 with col_num:
     source_num = st.slider("Videos to find", 1, 5, 2, key="source_num")
 
@@ -193,13 +196,13 @@ if st.button("🔍 Source Content", type="secondary"):
     with st.spinner("Searching for " + source_sport + " — " + source_league + " content..."):
         downloaded = search_and_download(source_sport, source_league, source_num)
     if downloaded:
-        st.success("✅ " + str(len(downloaded)) + " videos downloaded to watch inbox. Start the watcher to process automatically.")
+        st.success("✅ " + str(len(downloaded)) + " videos downloaded to watch inbox.")
         for f in downloaded:
             st.write("📥 " + os.path.basename(f))
     else:
         st.warning("No new videos found. Try a different sport or league.")
-st.divider()
 
+st.divider()
 st.markdown("### 📁 Select Video")
 input_method = st.radio("Input method", ["Upload file", "Local file path"], horizontal=True)
 
@@ -224,10 +227,8 @@ if video_ready and not st.session_state.processing:
     if st.button("🚀 Process Highlights", type="primary"):
         st.session_state.processing = True
         st.session_state.processed = False
-
         output_dir = os.path.expanduser('~/highlight-editor/output')
         os.makedirs(output_dir, exist_ok=True)
-
         if video_source[0] == "upload":
             tmp_dir = tempfile.mkdtemp()
             video_path = os.path.join(tmp_dir, video_source[1].name)
@@ -238,7 +239,6 @@ if video_ready and not st.session_state.processing:
             video_path = os.path.expanduser(video_source[1])
 
         with st.status("Processing your video...", expanded=True) as status:
-
             st.write("🔍 Detecting highlights...")
             highlights = find_highlights(video_path, sensitivity=SPORT_PRESETS[sport]['sensitivity'], min_gap=SPORT_PRESETS[sport]['min_gap'])
             highlights = sorted(highlights, key=lambda x: x['score'], reverse=True)
@@ -247,25 +247,21 @@ if video_ready and not st.session_state.processing:
             highlights = sorted(highlights, key=lambda x: x['timestamp'])
             timestamps = [h['timestamp'] for h in highlights]
             st.write("Found " + str(len(highlights)) + " highlights")
-
             for h in highlights:
                 minutes = int(h['timestamp'] // 60)
                 seconds = int(h['timestamp'] % 60)
                 flame = "🔥" if h['score'] >= 70 else ""
                 st.write("  → " + str(minutes) + ":" + str(seconds).zfill(2) + " — Score: " + str(h['score']) + " " + flame)
-
             if mode in ("short", "both"):
                 st.write("✂️ Cutting short form clips...")
                 cut_highlights(video_path, timestamps, clip_duration=SPORT_PRESETS[sport]['clip_duration'], format='vertical', output_dir=output_dir)
                 if use_captions:
                     st.write("💬 Adding captions...")
                     caption_all_clips(output_dir, format='vertical', font_size=font_size, position=position)
-
             if mode in ("long", "both"):
                 st.write("🎞️ Stitching long form reel...")
                 cut_highlights(video_path, timestamps, clip_duration=SPORT_PRESETS[sport]['clip_duration'], format='horizontal', output_dir=output_dir)
                 stitch_highlights(output_dir, final_output_name='highlight_reel_horizontal.mp4')
-
             st.write("🤖 Generating AI captions and hashtags...")
             try:
                 caption_text = generate_captions(sport, timestamps, [h['score'] for h in highlights], SPORT_PRESETS[sport]['clip_duration'])
@@ -274,7 +270,6 @@ if video_ready and not st.session_state.processing:
             except Exception as e:
                 ai_captions = {}
                 st.write("⚠️ Caption generation failed: " + str(e))
-
             status.update(label="✅ Done!", state="complete")
 
         st.session_state.output_dir = output_dir
@@ -282,7 +277,6 @@ if video_ready and not st.session_state.processing:
         st.session_state.ai_captions = ai_captions
         st.session_state.processed = True
         st.session_state.processing = False
-
         if tmp_dir:
             shutil.rmtree(tmp_dir)
 
@@ -290,23 +284,17 @@ if st.session_state.processed:
     output_dir = st.session_state.output_dir
     highlights = st.session_state.highlights
     ai_captions = st.session_state.ai_captions
-
     st.divider()
-
     if use_preview:
         st.subheader("👀 Preview + Approve Clips")
         st.markdown("Review each clip before downloading. Edit captions if needed.")
-
         approved_clips = []
         all_vertical = sorted([f for f in glob.glob(os.path.join(output_dir, "highlight_*_vertical.mp4")) if "_captioned" not in f])
-
         for i, clip_path in enumerate(all_vertical):
             clip_name = os.path.basename(clip_path)
             clip_num = i + 1
-
             with st.expander("Clip " + str(clip_num) + " — " + clip_name, expanded=True):
                 col1, col2 = st.columns([1, 1])
-
                 with col1:
                     st.video(clip_path)
                     if i < len(highlights):
@@ -315,7 +303,6 @@ if st.session_state.processed:
                         score = highlights[i]['score']
                         flame = "🔥" if score >= 70 else ""
                         st.caption("Timestamp: " + str(minutes) + ":" + str(seconds).zfill(2) + " | Score: " + str(score) + " " + flame)
-
                 with col2:
                     if ai_captions and clip_num in ai_captions:
                         st.text_area("Instagram Caption", value=ai_captions[clip_num].get('instagram', ''), key="ig_" + str(clip_num))
@@ -323,16 +310,12 @@ if st.session_state.processed:
                         st.text_area("Hashtags", value=ai_captions[clip_num].get('hashtags', ''), key="ht_" + str(clip_num))
                     else:
                         st.info("No AI captions available")
-
                 approve = st.checkbox("✅ Approve this clip", value=True, key="approve_" + str(clip_num))
                 if approve:
                     approved_clips.append(clip_path)
-
         st.divider()
         st.write("**" + str(len(approved_clips)) + " of " + str(len(all_vertical)) + " clips approved**")
-
         col_dl, col_sched = st.columns([1, 1])
-
         with col_dl:
             if st.button("⬇️ Download Approved Clips", type="primary"):
                 for clip_path in approved_clips:
@@ -343,7 +326,6 @@ if st.session_state.processed:
                 if os.path.exists(reel):
                     with open(reel, "rb") as f:
                         st.download_button(label="⬇️ highlight_reel_horizontal.mp4", data=f, file_name="highlight_reel_horizontal.mp4", mime="video/mp4", key="dl_reel")
-
         with col_sched:
             st.subheader("📅 Schedule Posts")
             platforms = st.multiselect("Platforms", ["instagram", "tiktok", "twitter", "youtube"], default=["instagram"])
@@ -360,11 +342,6 @@ if st.session_state.processed:
                         add_to_queue(clip_path, platform, caption, hashtags)
                         added += 1
                 st.success("✅ Added " + str(added) + " posts to schedule!")
-                st.json(load_schedule()['queue'][-added:])
-
-
-
-                st.divider()
             st.subheader("📋 Current Queue")
             schedule = load_schedule()
             queue = schedule.get('queue', [])
@@ -375,11 +352,6 @@ if st.session_state.processed:
                     st.caption(item['caption'][:80] + "...")
             else:
                 st.info("No posts queued yet")
-
-
-
-    
-
     else:
         st.subheader("📥 Download Your Clips")
         all_clips = glob.glob(os.path.join(output_dir, "*.mp4"))
@@ -387,28 +359,21 @@ if st.session_state.processed:
             clip_name = os.path.basename(clip)
             with open(clip, "rb") as f:
                 st.download_button(label="⬇️ " + clip_name, data=f, file_name=clip_name, mime="video/mp4", key="dl_" + clip_name)
-                st.divider()
-st.subheader("📊 Analytics Dashboard")
 
+st.subheader("📊 Analytics Dashboard")
 analytics = load_analytics()
 schedule = load_schedule()
 queue = schedule.get('queue', [])
-
 col1, col2, col3, col4 = st.columns(4)
-
 with col1:
     st.metric("Videos Processed", len(analytics.get('videos_processed', [])))
-
 with col2:
-    import glob
     output_dir = os.path.expanduser('~/highlight-editor/output')
     clips = glob.glob(os.path.join(output_dir, '*.mp4'))
     st.metric("Clips in Output", len(clips))
-
 with col3:
     queued = len([p for p in queue if p['status'] == 'queued'])
     st.metric("Posts Queued", queued)
-
 with col4:
     published = len([p for p in queue if p['status'] == 'posted'])
     st.metric("Posts Published", published + len(analytics.get('posts_published', [])))
@@ -426,9 +391,10 @@ if upcoming:
     st.subheader("🕐 Upcoming Posts")
     for post in sorted(upcoming, key=lambda x: x['scheduled_time'])[:5]:
         st.write("🕐 **" + post['scheduled_time'] + "** | " + post['platform'].upper() + " | " + os.path.basename(post['clip_path']))
+
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: #5a5a6a; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; padding: 16px 0;'>
-    HighlightOS — TM Ventures © 2026 | <a href='https://tmventures.io' style='color: #5a5a6a;'>tmventures.io</a>
+    HighlightOS — TM Ventures © 2026 | <a href='https://tmventures.io' style='color: #5a5a6a;'>tmventures.io</a> | <a href='https://tmventures.io/pricing.html' style='color: #5a5a6a;'>Pricing</a>
 </div>
 """, unsafe_allow_html=True)
