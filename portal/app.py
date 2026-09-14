@@ -5,32 +5,30 @@ import json
 app = Flask(__name__)
 app.secret_key = 'highlightos-tm-ventures-2026'
 
-DEMO_CLIENTS = {
-    'naples_eagles_basketball': {
-        'client_id': 'naples_eagles_basketball',
-        'client_name': 'Naples Eagles',
-        'team_name': 'Naples Eagles Basketball',
-        'sport': 'basketball',
-        'league': 'Florida High School Basketball',
-        'contact_email': 'coach@napleseagles.com',
-        'players': [
-            {'number': 23, 'name': 'Marcus Johnson', 'position': 'Point Guard'},
-            {'number': 11, 'name': 'Tyler Williams', 'position': 'Small Forward'},
-            {'number': 5, 'name': 'Jordan Davis', 'position': 'Center'},
-        ]
-    }
-}
+CLIENTS_FILE = os.path.join(os.path.dirname(__file__), 'clients.json')
+
+
+def load_all_clients():
+    if os.path.exists(CLIENTS_FILE):
+        with open(CLIENTS_FILE, 'r') as f:
+            data = json.load(f)
+            if 'client_id' in data:
+                return {data['client_id']: data}
+            return data
+    return {}
 
 
 def get_client_by_email(email):
-    for client_id, client in DEMO_CLIENTS.items():
+    clients = load_all_clients()
+    for client_id, client in clients.items():
         if client.get('contact_email', '').lower() == email.lower():
             return client
     return None
 
 
 def load_client(client_id):
-    return DEMO_CLIENTS.get(client_id)
+    clients = load_all_clients()
+    return clients.get(client_id)
 
 
 @app.route('/')
