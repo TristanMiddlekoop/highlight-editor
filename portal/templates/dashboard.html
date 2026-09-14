@@ -99,7 +99,11 @@
                 <div class="clip-name">{{ clip.split('/')[-1] }}</div>
             </div>
             {% endfor %}
-        </div>
+
+                {% else %}
+        <p class="empty">No clips yet. Upload your first game footage to get started.</p>
+        {% endif %}
+    </div>
 
     <div class="section">
         <h2>👥 Roster</h2>
