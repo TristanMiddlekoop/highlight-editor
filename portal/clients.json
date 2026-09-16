@@ -1,76 +1,138 @@
 {
-  "client_id": "naples_eagles_basketball",
-  "client_name": "Naples Eagles",
-  "team_name": "Naples Eagles",
-  "sport": "basketball",
-  "league": "Florida High School Basketball",
-  "created_at": "2026-08-18T23:49:59.081805",
-  "active": true,
-  "branding": {
-    "primary_color": [
-      255,
-      140,
-      0
-    ],
-    "secondary_color": [
-      255,
-      255,
-      255
-    ],
-    "logo_path": "",
-    "watermark_text": "Naples Eagles"
-  },
-  "overlay_settings": {
-    "show_scoreboard": true,
-    "show_lower_third": true,
-    "show_label": true,
-    "show_ticker": true
-  },
-  "posting": {
-    "platforms": [
-      "youtube"
-    ],
-    "schedule_times": [
-      "09:00",
-      "12:00",
-      "18:00"
-    ],
-    "auto_post": false
-  },
-  "social_accounts": {
-    "youtube_channel_id": "",
-    "instagram_account": "",
-    "tiktok_account": "",
-    "twitter_account": ""
-  },
-  "players": [
-    {
-      "id": "player_1",
-      "name": "Marcus Johnson",
-      "number": 23,
-      "position": "Point Guard",
-      "photo_path": "",
-      "fun_fact": "Averaging 18 points per game this season",
-      "added_at": "2026-08-18T23:49:59.082034"
+  "naples_eagles_basketball": {
+    "client_id": "naples_eagles_basketball",
+    "client_name": "Naples Eagles",
+    "team_name": "Naples Eagles",
+    "sport": "basketball",
+    "league": "Florida High School Basketball",
+    "created_at": "2026-08-18T23:49:59.081805",
+    "active": true,
+    "branding": {
+      "primary_color": [
+        255,
+        140,
+        0
+      ],
+      "secondary_color": [
+        255,
+        255,
+        255
+      ],
+      "logo_path": "",
+      "watermark_text": "Naples Eagles"
     },
-    {
-      "id": "player_2",
-      "name": "Tyler Williams",
-      "number": 11,
-      "position": "Small Forward",
-      "photo_path": "",
-      "fun_fact": "Committed to University of Florida",
-      "added_at": "2026-08-18T23:49:59.082185"
+    "overlay_settings": {
+      "show_scoreboard": true,
+      "show_lower_third": true,
+      "show_label": true,
+      "show_ticker": true
     },
-    {
-      "id": "player_3",
-      "name": "Jordan Davis",
-      "number": 5,
-      "position": "Center",
-      "photo_path": "",
-      "fun_fact": "Team captain and defensive anchor",
-      "added_at": "2026-08-18T23:49:59.082319"
-    }
-  ],
-  "contact_email": "coach@napleseagles.com"
+    "posting": {
+      "platforms": [
+        "youtube"
+      ],
+      "schedule_times": [
+        "09:00",
+        "12:00",
+        "18:00"
+      ],
+      "auto_post": false
+    },
+    "social_accounts": {
+      "youtube_channel_id": "",
+      "instagram_account": "",
+      "tiktok_account": "",
+      "twitter_account": ""
+    },
+    "players": [
+      {
+        "id": "player_1",
+        "name": "Marcus Johnson",
+        "number": 23,
+        "position": "Point Guard",
+        "photo_path": "",
+        "fun_fact": "Averaging 18 points per game this season",
+        "added_at": "2026-08-18T23:49:59.082034"
+      },
+      {
+        "id": "player_2",
+        "name": "Tyler Williams",
+        "number": 11,
+        "position": "Small Forward",
+        "photo_path": "",
+        "fun_fact": "Committed to University of Florida",
+        "added_at": "2026-08-18T23:49:59.082185"
+      },
+      {
+        "id": "player_3",
+        "name": "Jordan Davis",
+        "number": 5,
+        "position": "Center",
+        "photo_path": "",
+        "fun_fact": "Team captain and defensive anchor",
+        "added_at": "2026-08-18T23:49:59.082319"
+      }
+    ],
+    "contact_email": "coach@napleseagles.com"
+  },
+  "miami-heat-basketball": {
+    "client_id": "miami-heat-basketball",
+    "client_name": "Miami Heat",
+    "team_name": "Miami Heat Basketball",
+    "sport": "basketball",
+    "league": "NBA",
+    "created_at": "2026-09-16T00:21:02.163144",
+    "active": true,
+    "branding": {
+      "primary_color": [
+        255,
+        140,
+        0
+      ],
+      "secondary_color": [
+        255,
+        255,
+        255
+      ],
+      "logo_path": "",
+      "watermark_text": "Miami Heat Basketball"
+    },
+    "overlay_settings": {
+      "show_scoreboard": true,
+      "show_lower_third": true,
+      "show_label": true,
+      "show_ticker": true
+    },
+    "posting": {
+      "platforms": [
+        "instagram",
+        "tiktok",
+        "youtube"
+      ],
+      "schedule_times": [
+        "09:00",
+        "12:00",
+        "18:00"
+      ],
+      "auto_post": false
+    },
+    "social_accounts": {
+      "youtube_channel_id": "",
+      "instagram_account": "",
+      "tiktok_account": "",
+      "twitter_account": ""
+    },
+    "players": [
+      {
+        "id": "player_1",
+        "name": "john , james , matthew , jonathon , manuel , tristan",
+        "number": 0,
+        "position": "point guard",
+        "photo_path": "",
+        "fun_fact": "is fun",
+        "added_at": "2026-09-16T00:22:16.949809"
+      }
+    ],
+    "contact_email": "miamiheatbasketball@gmail.com"
+  }
 }
